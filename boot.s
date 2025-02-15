@@ -51,7 +51,7 @@ jump_to_long:
     mov ss, ax
     mov ds, ax
     mov es, ax
-    jmp gdt64.code:kmain
+    jmp gdt64.code:k_setup
 
 halt:
     hlt
@@ -84,15 +84,17 @@ gdt64:
 ;;
 section .text
 bits 64
-global enable_sse
 
-enable_sse:
+k_setup:
+    ; enable SSE
     mov rax, cr0
     and ax, 0xfffb
     or ax, 0x0002
     mov cr0, rax
-
     mov rax, cr4
     or ax, 3 << 9
     mov cr4, rax
-    ret
+
+    ; start kernel
+    call kmain
+    hlt
