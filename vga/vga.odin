@@ -60,11 +60,9 @@ put_char_fg :: proc(c: byte, fg: Color, offset := 0) {
 }
 
 put_string :: proc(s: string, offset := 0) {
-    vc := DEFAULT
     offset := offset
     for c in s {
-        vc.char = byte(c)
-        VGA[offset] = vc
+        put_char(byte(c), offset)
         offset += 1
     }
 }
