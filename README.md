@@ -4,6 +4,8 @@ This project is a toy operating system in Odin. It is very early development and
 
 Nevertheless, I welcome to you take a look at it in all it's awfulness. If you'd like start a similar project, you can find some useful links below.
 
+The name is a double play on words, "tin kernel" as in "flimsy", and (tinker)nel as in tinkering with things.
+
 ## Links
 
 * [Writing an OS kernel in Odin](https://bumbread.substack.com/p/writing-an-os-kernel-in-odin)
