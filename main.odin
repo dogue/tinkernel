@@ -7,6 +7,8 @@ import "core:mem"
 import "core:fmt"
 import "core:math/bits"
 
+BUILD_HASH :: #config(BUILD_HASH, "unknown")
+
 foreign _ {
     @(link_name = "__$startup_runtime")
     _startup_runtime :: proc "odin" () ---
@@ -47,13 +49,13 @@ kmain :: proc "contextless" (mb_info: ^Multiboot_Info, mb_magic: u32) -> ! {
     vga.clear()
 
     if mb_magic != 0x36d76289 {
-        vga.kprint("BAD BOOT :(")
+        vga.print("BAD BOOT :(")
         halt_catch_fire()
     }
 
     mmap := find_mmap(mb_info)
     if mmap == nil {
-        vga.kprint("No memory map found\n:(")
+        vga.print("No memory map found\n:(")
         halt_catch_fire()
     }
 
@@ -70,6 +72,9 @@ kmain :: proc "contextless" (mb_info: ^Multiboot_Info, mb_magic: u32) -> ! {
     mem_block := slice.from_ptr(base_ptr, int(size_aligned))
     mem.buddy_allocator_init(&kalloc, mem_block, 8)
     context.allocator = mem.buddy_allocator(&kalloc)
+
+    vga.printfln("Tinkernel - build: %s", BUILD_HASH)
+    vga.printf("Total available mem: %d MB", size_aligned / 1024 / 1024)
 
     halt_catch_fire()
 }
