@@ -3,19 +3,15 @@ package kernel
 import "vga"
 import "core:slice"
 import "base:runtime"
+import "core:mem"
+import "core:fmt"
+import "core:math/bits"
 
 foreign _ {
     @(link_name = "__$startup_runtime")
     _startup_runtime :: proc "odin" () ---
     @(link_name = "__$cleanup_runtime")
     _cleanup_runtime :: proc "odin" () ---
-}
-
-foreign import boot "boot.s"
-
-foreign boot {
-    debug_eax: u32
-    debug_ebx: u32
 }
 
 Multiboot_Info :: struct #packed {
@@ -48,6 +44,8 @@ kmain :: proc "contextless" (mb_info: ^Multiboot_Info, mb_magic: u32) -> ! {
     context = {}
     #force_no_inline _startup_runtime()
 
+    vga.clear()
+
     if mb_magic != 0x36d76289 {
         vga.kprint("BAD BOOT :(")
         halt_catch_fire()
@@ -65,17 +63,13 @@ kmain :: proc "contextless" (mb_info: ^Multiboot_Info, mb_magic: u32) -> ! {
         len = int(entry_count),
     }
 
-    for entry, i in entries {
-        vga.kprint("Region ")
-        vga.kprint_hex(i)
-        vga.kprint(": Base=")
-        vga.kprint_hex(entry.base_addr)
-        vga.kprint(" Len=")
-        vga.kprint_hex(entry.len)
-        vga.kprint(" Type=")
-        vga.kprint_hex(entry.type)
-        vga.kprint("\n")
-    }
+    kalloc: mem.Buddy_Allocator
+    base_ptr := (^u8)(uintptr(entries[3].base_addr))
+    size := int(entries[3].len)
+    size_aligned := uint(1) << bits.log2(uint(size))
+    mem_block := slice.from_ptr(base_ptr, int(size_aligned))
+    mem.buddy_allocator_init(&kalloc, mem_block, 8)
+    context.allocator = mem.buddy_allocator(&kalloc)
 
     halt_catch_fire()
 }
@@ -102,3 +96,4 @@ find_mmap :: proc (mb_info: ^Multiboot_Info) -> ^Multiboot_Memory_Map {
 align_up :: proc(val: u32, align: u32) -> u32 {
     return (val + (align - 1)) & ~(align - 1)
 }
+

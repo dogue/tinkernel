@@ -7,7 +7,7 @@ clean() {
 }
 
 build_kernel() {
-    odin build . -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -no-rtti -debug -no-entry-point -disable-red-zone -use-single-module
+    odin build . -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -debug -no-entry-point -disable-red-zone -use-single-module
 }
 
 build_bootloader() {
@@ -38,7 +38,7 @@ build() {
 }
 
 run() {
-    qemu-system-x86_64 -cdrom build/kernel.iso
+    qemu-system-x86_64 -cdrom build/kernel.iso -m 500M
 }
 
 print_help() {
