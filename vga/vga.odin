@@ -1,6 +1,7 @@
 package vga
 
-_buf := cast([^]VGA_Char)uintptr(0xb8000)
+@(private)
+BUF := cast([^]VGA_Char)uintptr(0xb8000)
 
 BLANK_CHAR :: VGA_Char {}
 DEFAULT_CHAR := VGA_Char {
@@ -37,23 +38,40 @@ VGA_Char :: bit_field u16 {
 }
 
 @(private)
+cursor := [2]int{0, 0}
+
+@(private)
 write :: proc(c: VGA_Char) {
-    @(static)
-    offset := 0
+    cr :: #force_inline proc() {
+        cursor.x = 0
+        cursor.y += 1
+    }
 
     switch c.char {
     case '\n':
-        offset += 80 - ((offset + 80) % 80)
+        cr()
+        return
+
+    case '\t':
+        if cursor.x + 4 < 80 {
+            cursor.x += 4
+        } else {
+            cr()
+        }
         return
     }
 
-    _buf[offset] = c
-    offset += 1
+    BUF[(cursor.y * 80) + cursor.x] = c
+    cursor.x += 1
+
+    if cursor.x >= 80 {
+        cr()
+    }
 }
 
 clear :: proc() {
     for i in 0..<80 * 25 {
-        _buf[i] = BLANK_CHAR
+        BUF[i] = BLANK_CHAR
     }
 }
 

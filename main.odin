@@ -16,7 +16,8 @@ kmain :: proc "contextless" () -> ! {
     #force_no_inline _startup_runtime()
 
     vga.clear()
-    vga.put_string("hellope!\nhehe")
+    vga.put_string("hellope!\n\thehe\n")
+    vga.put_string("this is a really long string that is intended to wrap around once it reaches the end of the screen on the right hand side so that I can test if that's working correctly with my current VGA text mode handling code")
 
     for {}
 }
