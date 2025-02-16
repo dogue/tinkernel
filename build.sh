@@ -7,8 +7,7 @@ clean() {
 }
 
 build_kernel() {
-    build_hash=$(git rev-parse --short HEAD)
-    odin build . -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -debug -no-entry-point -disable-red-zone -use-single-module -define:BUILD_HASH=$build_hash
+    odin build . -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -debug -no-entry-point -disable-red-zone -use-single-module
 }
 
 build_bootloader() {

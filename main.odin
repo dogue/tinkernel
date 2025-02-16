@@ -7,8 +7,6 @@ import "core:mem"
 import "core:fmt"
 import "core:math/bits"
 
-BUILD_HASH :: #config(BUILD_HASH, "unknown")
-
 foreign _ {
     @(link_name = "__$startup_runtime")
     _startup_runtime :: proc "odin" () ---
@@ -73,7 +71,7 @@ kmain :: proc "contextless" (mb_info: ^Multiboot_Info, mb_magic: u32) -> ! {
     mem.buddy_allocator_init(&kalloc, mem_block, 8)
     context.allocator = mem.buddy_allocator(&kalloc)
 
-    vga.printfln("Tinkernel - build: %s", BUILD_HASH)
+    vga.println("Tinkernel :)")
     vga.printf("Total available mem: %d MB", size_aligned / 1024 / 1024)
 
     halt_catch_fire()
