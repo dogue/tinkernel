@@ -1,9 +1,18 @@
 global start
 extern kmain
 
+section .data
+multiboot_ptr: dq 0
+multiboot_magic: dq 0
+
+;;
 section .text
 bits 32
 start:
+    mov dword [debug_eax], eax
+    mov dword [debug_ebx], ebx
+    mov dword [multiboot_magic], eax
+    mov dword [multiboot_ptr], ebx
     mov eax, p3_table
     or eax, 0b11
     mov dword [p4_table], eax
@@ -96,5 +105,14 @@ k_setup:
     mov cr4, rax
 
     ; start kernel
+    mov rdi, [multiboot_ptr]
+    mov rsi, [multiboot_magic]
     call kmain
     hlt
+
+;;
+section .data
+global debug_eax
+global debug_ebx
+debug_eax: dd 0
+debug_ebx: dd 0

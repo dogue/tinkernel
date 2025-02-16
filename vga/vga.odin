@@ -1,6 +1,8 @@
 package vga
 
 import "base:runtime"
+import "core:slice"
+import "base:intrinsics"
 
 @(private)
 BUF := cast([^]VGA_Char)uintptr(0xb8000)
@@ -102,16 +104,19 @@ clear :: proc() {
     }
 }
 
+@(private)
 put_char :: proc {
     put_char_default,
 }
 
+@(private)
 put_char_default :: proc(c: byte) {
     vc := DEFAULT_CHAR
     vc.char = c
     write(vc)
 }
 
+@(private)
 put_char_fg :: proc(c: byte, fg: Color) {
     vc := DEFAULT_CHAR
     vc.char = c
@@ -119,8 +124,61 @@ put_char_fg :: proc(c: byte, fg: Color) {
     write(vc)
 }
 
+@(private)
 put_string :: proc(s: string) {
     for c in s {
         put_char(byte(c))
+    }
+}
+
+kprint :: proc(s: string) {
+    put_string(s)
+}
+
+kprint_int :: proc(n: u64) {
+    if n == 0 {
+        put_char('0')
+        return
+    }
+
+    tmp: [100]u8
+    n := n
+
+    i := 0
+    for n != 0 {
+        r := n % 10
+        tmp[i] = u8(r) + 0x30
+        i += 1
+        n /= 10
+    }
+
+    for j := i - 1; j >= 0; j -= 1 {
+        put_char(byte(tmp[j]))
+    }
+}
+
+kprint_hex :: proc(n: $T) where intrinsics.type_is_integer(T) {
+    if n == 0 {
+        put_char('0')
+        return
+    }
+
+    tmp: [100]u8
+    n := n
+
+    i := 0
+    for n != 0 {
+        r := n % 16
+        if r < 10 {
+            tmp[i] = u8(r) + 0x30
+        } else {
+            tmp[i] = u8(r) + 0x37
+        }
+        i += 1
+        n /= 16
+    }
+
+    for j := i - 1; j >= 0; j -= 1 {
+        put_char(byte(tmp[j]))
     }
 }
