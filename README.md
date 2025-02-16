@@ -1,4 +1,4 @@
-# TINKERnel
+# tinkernel
 
 This project is a toy operating system in Odin. It is very early development and will never be ready nor recommended for real use.
 
