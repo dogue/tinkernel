@@ -16,7 +16,7 @@ kmain :: proc "contextless" () -> ! {
     #force_no_inline _startup_runtime()
 
     vga.clear()
-    vga.put_string("hellope!")
+    vga.put_string("hellope!\nhehe")
 
     for {}
 }

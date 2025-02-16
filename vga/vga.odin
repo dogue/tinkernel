@@ -1,9 +1,9 @@
 package vga
 
-VGA := cast([^]VGA_Char)uintptr(0xb8000)
+_buf := cast([^]VGA_Char)uintptr(0xb8000)
 
-BLANK :: VGA_Char {}
-DEFAULT := VGA_Char {
+BLANK_CHAR :: VGA_Char {}
+DEFAULT_CHAR := VGA_Char {
     char = 0,
     fg = .LightGray,
     bg = .Black,
@@ -36,9 +36,24 @@ VGA_Char :: bit_field u16 {
     blink: bool  | 1,
 }
 
+@(private)
+write :: proc(c: VGA_Char) {
+    @(static)
+    offset := 0
+
+    switch c.char {
+    case '\n':
+        offset += 80 - ((offset + 80) % 80)
+        return
+    }
+
+    _buf[offset] = c
+    offset += 1
+}
+
 clear :: proc() {
     for i in 0..<80 * 25 {
-        VGA[i] = BLANK
+        _buf[i] = BLANK_CHAR
     }
 }
 
@@ -46,23 +61,21 @@ put_char :: proc {
     put_char_default,
 }
 
-put_char_default :: proc(c: byte, offset := 0) {
-    vc := DEFAULT
+put_char_default :: proc(c: byte) {
+    vc := DEFAULT_CHAR
     vc.char = c
-    VGA[offset] = vc
+    write(vc)
 }
 
-put_char_fg :: proc(c: byte, fg: Color, offset := 0) {
-    vc := DEFAULT
+put_char_fg :: proc(c: byte, fg: Color) {
+    vc := DEFAULT_CHAR
     vc.char = c
     vc.fg = fg
-    VGA[offset] = vc
+    write(vc)
 }
 
-put_string :: proc(s: string, offset := 0) {
-    offset := offset
+put_string :: proc(s: string) {
     for c in s {
-        put_char(byte(c), offset)
-        offset += 1
+        put_char(byte(c))
     }
 }
