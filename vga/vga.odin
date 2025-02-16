@@ -1,5 +1,7 @@
 package vga
 
+import "base:runtime"
+
 @(private)
 BUF := cast([^]VGA_Char)uintptr(0xb8000)
 
@@ -42,11 +44,6 @@ cursor := [2]int{0, 0}
 
 @(private)
 write :: proc(c: VGA_Char) {
-    cr :: #force_inline proc() {
-        cursor.x = 0
-        cursor.y += 1
-    }
-
     switch c.char {
     case '\n':
         cr()
@@ -67,6 +64,36 @@ write :: proc(c: VGA_Char) {
     if cursor.x >= 80 {
         cr()
     }
+
+}
+
+@(private)
+cr :: #force_inline proc() {
+    cursor.x = 0
+    cursor.y += 1
+
+    if cursor.y >= 25 {
+        scroll()
+    }
+}
+
+@(private)
+scroll :: proc() {
+    scr: [^]VGA_Char
+    temp := cursor.y - 25 + 1
+    // yeah it's ugly, so what?
+    runtime.mem_copy(&BUF[0], &BUF[temp * 80], (25 - temp) * 80 * 2)
+    runtime.mem_zero(&BUF[(25 - temp) * 80], 80)
+    cursor.y = 24
+}
+
+clear_line :: proc() {
+    pos := cursor.x
+    cursor.x = 0
+    for i in 0..<80 {
+        BUF[(cursor.y * 80) + cursor.x] = BLANK_CHAR
+    }
+    cursor.x = pos
 }
 
 clear :: proc() {
