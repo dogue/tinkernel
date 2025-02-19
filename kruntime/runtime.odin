@@ -68,13 +68,13 @@ init :: proc "contextless" (mb_info: ^Multiboot_Info) -> runtime.Context {
     entries := slice.from_ptr(entries_ptr, int(entry_count))
 
     region_base_addr := (^u8)(uintptr(entries[3].base_addr))
-    region_size := int(entries[3].len)
-    region_size_aligned := uint(1) << bits.log2(uint(region_size))
-    region := slice.from_ptr(region_base_addr, int(region_size_aligned))
+    region_size := uint(1) << bits.log2(uint(entries[3].len))
+    region := slice.from_ptr(region_base_addr, int(region_size))
+
     mem.buddy_allocator_init(&kernel_rt.allocator, region, 8)
     kernel_rt.ctx.allocator = mem.buddy_allocator(&kernel_rt.allocator)
     kernel_rt.mem_base = entries[3].base_addr
-    kernel_rt.mem_size = u64(region_size_aligned)
+    kernel_rt.mem_size = u64(region_size)
 
     return kernel_rt.ctx
 }
