@@ -21,11 +21,11 @@ Color :: enum u8 {
     White,
 }
 
-print :: proc(s: string) {
+print :: proc "contextless" (s: string) {
     put_string(s)
 }
 
-println :: proc(s: string) {
+println :: proc "contextless" (s: string) {
     print(s)
     print("\n")
 }
@@ -40,7 +40,7 @@ printfln :: proc(f: string, args: ..any) {
     print("\n")
 }
 
-clear :: proc() {
+clear :: proc "contextless" () {
     for i in 0..<80 * 25 {
         BUF[i] = BLANK_CHAR
     }

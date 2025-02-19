@@ -24,7 +24,7 @@ VGA_Char :: bit_field u16 {
 
 cursor := [2]int{0, 0}
 
-write :: proc(c: VGA_Char) {
+write :: proc "contextless" (c: VGA_Char) {
     switch c.char {
     case '\n':
         cr()
@@ -48,7 +48,7 @@ write :: proc(c: VGA_Char) {
 
 }
 
-cr :: #force_inline proc() {
+cr :: #force_inline proc "contextless" () {
     cursor.x = 0
     cursor.y += 1
 
@@ -57,7 +57,7 @@ cr :: #force_inline proc() {
     }
 }
 
-scroll :: proc() {
+scroll :: proc "contextless" () {
     scr: [^]VGA_Char
     temp := cursor.y - 25 + 1
     // yeah it's ugly, so what?
@@ -75,11 +75,7 @@ clear_line :: proc() {
     cursor.x = pos
 }
 
-put_char :: proc {
-    put_char_default,
-}
-
-put_char_default :: proc(c: byte) {
+put_char :: proc "contextless" (c: byte) {
     vc := DEFAULT_CHAR
     vc.char = c
     write(vc)
@@ -92,7 +88,7 @@ put_char_fg :: proc(c: byte, fg: Color) {
     write(vc)
 }
 
-put_string :: proc(s: string) {
+put_string :: proc "contextless" (s: string) {
     for c in s {
         put_char(byte(c))
     }
