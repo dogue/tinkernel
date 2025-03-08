@@ -9,15 +9,6 @@ multiboot_magic: dq 0
 section .text
 bits 32
 
-; eax -> table being mapped
-; ebx -> parent table
-; ecx -> entry index
-map_table:
-    or eax, 0b11    ; present + writable
-    mov [ebx + (ecx * 8)], eax
-    mov dword [ebx + (ecx * 8) + 4], 0
-    ret
-
 ; eax -> phys addr
 ; ebx -> flags
 ; ecx -> table addr
