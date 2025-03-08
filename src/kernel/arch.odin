@@ -1,6 +1,6 @@
-package arch
+package kernel
 
-foreign import apic "apic.s"
+foreign import apic "x86/apic.s"
 
 @(default_calling_convention = "sysv")
 foreign apic {

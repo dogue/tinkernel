@@ -1,8 +1,9 @@
-package arch
+package kernel
 
-import "../vga"
+import "core:fmt"
+import "vga"
 
-foreign import interrupts "interrupts.s"
+foreign import interrupts "x86/interrupts.s"
 @(default_calling_convention = "sysv")
 foreign interrupts {
     load_idt :: proc(idtr: ^IDT_Descriptor) ---
@@ -55,6 +56,15 @@ idt_descriptor: IDT_Descriptor
 
 @(export)
 interrupt_handler :: proc "sysv" (id: u64, error_code: u64) {
+    context = default_context()
+
+    switch id {
+    case 0: ih_div_error()
+    case 2: ih_nmi()
+    case 8: ih_double_fault(error_code)
+    case 13: ih_general_protection_fault(error_code)
+    case 14: ih_page_fault(error_code)
+    }
 }
 
 // set an entry
@@ -94,7 +104,7 @@ init_idt :: proc() {
     set_idt_gate(11, rawptr(isr11))
     set_idt_gate(12, rawptr(isr12))
     set_idt_gate(13, rawptr(isr13))
-    set_idt_gate(14, rawptr(isr14)) // page fault
+    set_idt_gate(14, rawptr(isr14))
     set_idt_gate(15, rawptr(isr15))
     set_idt_gate(16, rawptr(isr16))
     set_idt_gate(17, rawptr(isr17))
@@ -103,4 +113,25 @@ init_idt :: proc() {
     set_idt_gate(20, rawptr(isr20))
 
     load_idt(&idt_descriptor)
+}
+
+ih_div_error :: proc() -> ! {
+    panic("DIVISION FAULT")
+}
+
+ih_nmi :: proc() {
+    log(.Debug, "caught NMI")
+}
+
+ih_double_fault :: proc(error_code: u64) {
+    panicf("doubel fault: %d", error_code)
+}
+
+ih_general_protection_fault :: proc(error_code: u64) {
+    logf(.Error, "general protection fault: %d", error_code)
+}
+
+ih_page_fault :: proc(error_code: u64) {
+    fault_addr := read_cr2()
+    panicf("page fault: 0x%X", fault_addr)
 }

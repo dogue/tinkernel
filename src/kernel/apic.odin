@@ -1,8 +1,8 @@
-package arch
+package kernel
 
-import "../vga"
+import "vga"
 
-foreign import apic "apic.s"
+foreign import apic "x86/apic.s"
 @(default_calling_convention = "sysv")
 foreign apic {
     get_apic_base :: proc() -> u32 ---

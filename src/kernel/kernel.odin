@@ -7,7 +7,6 @@ import "core:mem"
 import "vga"
 import mb "multiboot"
 import "meminfo"
-import "arch"
 
 foreign {
     @(link_name = "__$startup_runtime")
@@ -21,14 +20,16 @@ foreign {
     kernel_phys_start: uintptr
 }
 
+// This data should only be accessed via the context returned by default_context()
+@(private = "file")
 KCTX: runtime.Context
+@(private = "file")
 KALLOC: runtime.Allocator
+@(private = "file")
 _KALLOC_BUDDY: mem.Buddy_Allocator
 
-panic :: proc "contextless" (msg: string) -> ! {
-    vga.print("[PANIC]: ")
-    vga.println(msg)
-    for {}
+default_context :: proc() -> runtime.Context {
+    return KCTX
 }
 
 init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
@@ -81,15 +82,12 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
     //     vga.println("")
     // }
 
-    vga.println("Initializing interrupt descriptor table")
-    arch.init_idt()
+    log(.Info, "Initializing interrupt descriptor table")
+    init_idt()
 
-    vga.println("Initializing local APIC")
-    arch.init_apic()
+    log(.Info, "Initializing local APIC")
+    init_apic()
 
     return default_context()
 }
 
-default_context :: proc() -> runtime.Context {
-    return KCTX
-}
