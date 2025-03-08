@@ -21,6 +21,14 @@ Color :: enum u8 {
     White,
 }
 
+print_int :: proc "contextless" (n: u64) {
+    kprint_int(n)
+}
+
+print_hex :: proc "contextless" (n: u64) {
+    kprint_hex(n)
+}
+
 print :: proc "contextless" (s: string) {
     put_string(s)
 }

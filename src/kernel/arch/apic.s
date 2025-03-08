@@ -1,27 +1,17 @@
-global read_apic_reg
-global write_apic_reg
-global enable_apic
-global read_apic_id
-global test_func
-global enable_apic_simple
+global get_apic_base
 
 section .text
 bits 64
 
-test_func:
+get_apic_base:
     mov ecx, 0x1b
-    rdmsr
-    ret
-
-read_apic_id:
-    mov ecx, 0x802
     rdmsr
     ret
 
 enable_apic_simple:
     mov ecx, 0x1b
     rdmsr
-    or eax, (1 << 11) | (1 << 10)
+    or eax, (1 << 11)
     wrmsr
     ret
 

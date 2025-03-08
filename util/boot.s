@@ -55,19 +55,27 @@ setup_paging:
     mov edx, 511
     call map_entry
 
-    ; PDPT[510] -> PD_high
+    ; PDPT[511] -> PD_high
     mov eax, pd_high
     mov ebx, 0x3
     mov ecx, pdpt_high
-    mov edx, 510        ; maps virtual -2GiB
+    mov edx, 511        ; maps virtual -2GiB
+    call map_entry
+
+    ; PD_high[495] -> PT_high
+    mov eax, pt_high
+    mov ebx, 0x3
+    mov ecx, pd_high
+    mov edx, 503        ; map APIC to FFFFFFFF_FEE0000 to mirror phys addr
     call map_entry
 
     ; APIC map
-    mov eax, 0xfee00000 ; phys addr
-    and eax, ~0x1fffff  ; 2MiB align
-    mov ebx, 0x3
-    mov ecx, pd_high
-    xor edx, edx
+    mov ecx, 0x1b
+    rdmsr
+    and eax, 0xfffff000
+    mov ebx, 0x13
+    mov ecx, pt_high
+    mov edx, 0
     call map_entry
 
     ret

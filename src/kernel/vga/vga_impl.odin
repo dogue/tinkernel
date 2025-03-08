@@ -94,7 +94,7 @@ put_string :: proc "contextless" (s: string) {
     }
 }
 
-kprint_int :: proc(n: u64) {
+kprint_int :: proc "contextless" (n: u64) {
     if n == 0 {
         put_char('0')
         return
@@ -116,7 +116,7 @@ kprint_int :: proc(n: u64) {
     }
 }
 
-kprint_hex :: proc(n: $T) where intrinsics.type_is_integer(T) {
+kprint_hex :: proc "contextless" (n: $T) where intrinsics.type_is_integer(T) {
     if n == 0 {
         put_char('0')
         return

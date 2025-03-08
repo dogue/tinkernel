@@ -59,32 +59,33 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
 
     vga.clear()
 
-    vga.println("REGIONS:")
-    for entry, i in entries {
-        type: string
-        switch entry.type {
-        case 1: type = "available"
-        case 2: type = "reserved"
-        case 3: type = "ACPI reclaimbable"
-        case 4: type = "ACPI NVS"
-        case 5: type = "bad memory"
-        case: type = "unknown"
-        }
+    // vga.println("REGIONS:")
+    // for entry, i in entries {
+    //     type: string
+    //     switch entry.type {
+    //     case 1: type = "available"
+    //     case 2: type = "reserved"
+    //     case 3: type = "ACPI reclaimbable"
+    //     case 4: type = "ACPI NVS"
+    //     case 5: type = "bad memory"
+    //     case: type = "unknown"
+    //     }
+    //
+    //     if type == "reserved" do continue
+    //
+    //
+    //     vga.printfln("\tREGION %d:", i)
+    //     vga.printfln("\t\tTYPE: %s", type)
+    //     vga.printfln("\t\tBASE: %x", entry.base_addr)
+    //     vga.printfln("\t\t LEN: %d", entry.len)
+    //     vga.println("")
+    // }
 
-        if type == "reserved" do continue
+    vga.println("Initializing interrupt descriptor table")
+    arch.init_idt()
 
-
-        vga.printfln("\tREGION %d:", i)
-        vga.printfln("\t\tTYPE: %s", type)
-        vga.printfln("\t\tBASE: %x", entry.base_addr)
-        vga.printfln("\t\t LEN: %d", entry.len)
-        vga.println("")
-    }
-
-    // arch.enable_apic_simple()
-    vga.printfln("APIC BASE: 0x%X", arch.test_func())
-    // vga.printfln("APIC ID: %d", arch.read_apic_id())
-    vga.printfln("KERNEL LOADED AT 0x%X", kernel_phys_start)
+    vga.println("Initializing local APIC")
+    arch.init_apic()
 
     return default_context()
 }
