@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+declare -a ASM_FILES
+
 clean() {
     if [ -d "build" ]; then
         rm -rf ./build
@@ -7,19 +9,27 @@ clean() {
 }
 
 build_kernel() {
-    odin build . -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -debug -no-entry-point -disable-red-zone -use-single-module
+    odin build src -build-mode:object -no-crt -target:freestanding_amd64_sysv -out:build/kernel.o -no-thread-local -reloc-mode:static -default-to-panic-allocator -debug -no-entry-point -disable-red-zone -use-single-module
 }
 
 build_bootloader() {
-    nasm -f elf64 boot.s -o build/boot.o
+    nasm -f elf64 util/boot.s -o build/boot.o
 
     if [ ! -f "build/multiboot_header.o" ]; then
-        nasm -f elf64 multiboot_header.s -o build/multiboot_header.o
+        nasm -f elf64 util/multiboot_header.s -o build/multiboot_header.o
     fi
 }
 
+build_asm() {
+    for asm_file in ./src/kernel/arch/*.s; do
+        outpath=build/$(basename $asm_file .s).o
+        nasm -f elf64 $asm_file -o build/$(basename $asm_file .s).o
+        ASM_FILES+=($outpath)
+    done
+}
+
 link_all() {
-    ld --nmagic --output=build/kernel.bin --script=linker.ld build/kernel.o build/multiboot_header.o build/boot.o
+    ld --nmagic --output=build/kernel.bin --script=util/linker.ld build/kernel.o build/multiboot_header.o build/boot.o ${ASM_FILES[@]}
 }
 
 build_iso() {
@@ -29,7 +39,8 @@ build_iso() {
 build() {
     clean
     mkdir -p build/isofiles/boot/grub
-    cp grub.cfg build/isofiles/boot/grub
+    cp util/grub.cfg build/isofiles/boot/grub
+    build_asm
     build_kernel
     build_bootloader
     link_all
