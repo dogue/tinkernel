@@ -16,8 +16,8 @@ kmain :: proc "contextless" (mb_info: ^mb.Multiboot_Info, mb_magic: u32) -> ! {
     vga.println("Tinkernel :)")
 
     // exception handler test
-    bad_addr := (^u8)(uintptr(0xffff_ffff_0000_6969))
-    bad_addr^ = 42
+    // bad_addr := (^u8)(uintptr(0xffff_ffff_0000_6969))
+    // bad_addr^ = 42
 
     for {}
 }

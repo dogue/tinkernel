@@ -26,6 +26,12 @@ build_asm() {
         nasm -f elf64 $asm_file -o build/$(basename $asm_file .s).o
         ASM_FILES+=($outpath)
     done
+
+    for asm_file in ./src/kernel/drivers/**/*.s; do
+        outpath=build/$(basename $asm_file .s).o
+        nasm -f elf64 $asm_file -o $outpath
+        ASM_FILES+=($outpath)
+    done
 }
 
 link_all() {

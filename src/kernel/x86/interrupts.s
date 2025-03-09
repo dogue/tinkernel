@@ -39,8 +39,8 @@ isr_common:
     extern interrupt_handler
     call interrupt_handler
 
-    mov rax, 0xfee000b0 ; APIC EOI reg
-    mov dword [rax], 0
+    ; mov rax, 0xfee000b0 ; APIC EOI reg
+    ; mov dword [rax], 0
 
     pop r15
     pop r14
@@ -58,7 +58,7 @@ isr_common:
     pop rbx
     pop rax
 
-    add rsp, 16
+    ; add rsp, 16
     iretq
 
 ; ISR handlers
@@ -75,7 +75,7 @@ isr%1:
 
 ; generate handlers for all interrupts
 %assign i 0
-%rep 32
+%rep 34
     ISR_STUB i
 %assign i i+1
 %endrep

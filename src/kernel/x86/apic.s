@@ -1,4 +1,5 @@
 global get_apic_base
+global enable_apic
 
 section .text
 bits 64
@@ -61,9 +62,5 @@ enable_apic:
     ; set enable bit
     or eax, (1<<11)
     wrmsr
-
-    ; enable APIC by writing to spurious interrupt vector reg
-    mov rdi, 0xf0
-    mov esi, 0x100
-    call write_apic_reg
+    sti
     ret

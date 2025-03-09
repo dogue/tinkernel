@@ -3,9 +3,10 @@ package kernel
 import "vga"
 
 foreign import apic "x86/apic.s"
+
 @(default_calling_convention = "sysv")
 foreign apic {
-    get_apic_base :: proc() -> u32 ---
+    enable_apic :: proc() ---
 }
 
 APIC_BASE :: 0xffff_ffff_fee0_0000
@@ -35,23 +36,42 @@ read_apic :: proc(reg: APIC_Register) -> u32 {
 }
 
 init_apic :: proc() {
-    // APIC_BASE = (0xffffffff << 32) | u64(get_apic_base())
-    // APIC_BASE = 0xfee00000
+    // ICW1 - init master and slave PICs
+
+    enable_apic()
     // enable APIC by setting spurious interrupt vector
     // bit 8 = enable
     // bits 0-7 = vector
-    // write_apic(.SPURIOUS, 0x1ff)
+    write_apic(.SPURIOUS, 0x1ff)
+    write_apic(.LVT_LINT0, 0x700)
 
     // disable all local interrupts initially
-    // write_apic(.LVT_TIMER, 0x10000)
-    // write_apic(.LVT_LINT0, 0x1070F)
-    // write_apic(.LVT_LINT1, 0x1040F)
-    // write_apic(.LVT_ERROR, 0x10000)
+    write_apic(.LVT_TIMER, (1 << 16))
+    // write_apic(.LVT_LINT0, (7 << 8))
+    write_apic(.LVT_LINT1, (1 << 16))
+    write_apic(.LVT_ERROR, (1 << 16))
 
-    write_apic(.LVT_LINT0, 0x1070f)
-    write_apic(.LVT_LINT1, 0x1040f)
-    write_apic(.LVT_TIMER, 0x10000)
-    write_apic(.LVT_ERROR, 0x10000)
+    init_pic()
+}
 
-    write_apic(.SPURIOUS, 0x1ff)
+init_pic :: proc() {
+    // ICW1: init master/slave PICs
+    outb(0x20, 0x11)
+    outb(0xa0, 0x11)
+
+    // ICW2: set base vectors, master 0x20, slave 0x28
+    outb(0x21, 0x20)
+    outb(0xa1, 0x28)
+
+    // ICW3: slave on IRQ2
+    outb(0x21, 0x04)
+    outb(0xa1, 0x02)
+
+    // ICW4: 8086 mode
+    outb(0x21, 0x01)
+    outb(0xa1, 0x01)
+
+    // unmask IRQ1 (kb) on master, mask all on slave
+    outb(0x21, 0xfd)
+    outb(0xa1, 0xff)
 }

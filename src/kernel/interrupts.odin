@@ -2,8 +2,10 @@ package kernel
 
 import "core:fmt"
 import "vga"
+import "drivers/keyboard"
 
 foreign import interrupts "x86/interrupts.s"
+
 @(default_calling_convention = "sysv")
 foreign interrupts {
     load_idt :: proc(idtr: ^IDT_Descriptor) ---
@@ -29,6 +31,7 @@ foreign interrupts {
     isr18 :: proc() ---
     isr19 :: proc() ---
     isr20 :: proc() ---
+    isr33 :: proc() ---
 }
 
 IDT_ENTRIES :: 256
@@ -54,16 +57,23 @@ IDT_Descriptor :: struct #packed {
 idt_entries: [IDT_ENTRIES]IDT_Entry
 idt_descriptor: IDT_Descriptor
 
+eoi :: #force_inline proc() {
+    outb(0x20, 0x20)
+    write_apic(.EOI, 0)
+}
+
 @(export)
 interrupt_handler :: proc "sysv" (id: u64, error_code: u64) {
     context = default_context()
+    defer eoi()
 
     switch id {
-    case 0: ih_div_error()
-    case 2: ih_nmi()
-    case 8: ih_double_fault(error_code)
-    case 13: ih_general_protection_fault(error_code)
-    case 14: ih_page_fault(error_code)
+    case 0x00: ih_div_error()
+    case 0x02: ih_nmi()
+    case 0x08: ih_double_fault(error_code)
+    case 0x0D: ih_general_protection_fault(error_code)
+    case 0x0E: ih_page_fault(error_code)
+    case 0x21: ih_keyboard()
     }
 }
 
@@ -111,6 +121,7 @@ init_idt :: proc() {
     set_idt_gate(18, rawptr(isr18))
     set_idt_gate(19, rawptr(isr19))
     set_idt_gate(20, rawptr(isr20))
+    set_idt_gate(33, rawptr(isr33))
 
     load_idt(&idt_descriptor)
 }
@@ -134,4 +145,8 @@ ih_general_protection_fault :: proc(error_code: u64) {
 ih_page_fault :: proc(error_code: u64) {
     fault_addr := read_cr2()
     panicf("page fault: 0x%X", fault_addr)
+}
+
+ih_keyboard :: proc() {
+    logf(.Debug, "KEY: 0x%2X", inb(0x60))
 }
