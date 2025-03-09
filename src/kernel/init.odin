@@ -4,7 +4,7 @@ import "base:runtime"
 import "core:slice"
 import "core:math/bits"
 import "core:mem"
-import "vga"
+import "../drivers/vga"
 import mb "multiboot"
 import "meminfo"
 

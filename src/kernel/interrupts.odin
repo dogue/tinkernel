@@ -1,13 +1,11 @@
 package kernel
 
 import "core:fmt"
-import "vga"
-import "drivers/keyboard"
-
-foreign import interrupts "x86/interrupts.s"
 
 @(default_calling_convention = "sysv")
-foreign interrupts {
+foreign {
+    inb :: proc(port: u16) -> u8 ---
+    outb :: proc(port: u16, value: u8) ---
     load_idt :: proc(idtr: ^IDT_Descriptor) ---
     read_cr2 :: proc() -> uintptr ---
     isr0 :: proc() ---
@@ -148,5 +146,6 @@ ih_page_fault :: proc(error_code: u64) {
 }
 
 ih_keyboard :: proc() {
-    logf(.Debug, "KEY: 0x%2X", inb(0x60))
+    // logf(.Debug, "KEY: 0x%2X", inb(0x60))
+    scancode := inb(0x60)
 }

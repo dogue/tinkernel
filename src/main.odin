@@ -1,7 +1,7 @@
 package tinkernel
 
 import "kernel"
-import "kernel/vga"
+import "drivers/vga"
 import mb "kernel/multiboot"
 
 @(export, link_name = "kmain", require)

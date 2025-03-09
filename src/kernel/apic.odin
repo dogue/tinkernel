@@ -1,11 +1,7 @@
 package kernel
 
-import "vga"
-
-foreign import apic "x86/apic.s"
-
 @(default_calling_convention = "sysv")
-foreign apic {
+foreign {
     enable_apic :: proc() ---
 }
 

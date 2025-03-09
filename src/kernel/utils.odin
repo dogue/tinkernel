@@ -2,14 +2,10 @@ package kernel
 
 import "base:runtime"
 import "core:fmt"
-import "vga"
-
-foreign import x86 "x86/asm_wrappers.s"
+import "../drivers/vga"
 
 @(default_calling_convention = "sysv")
-foreign x86 {
-    outb :: proc(port: u16, value: u8) ---
-    inb :: proc(port: u16) -> u8 ---
+foreign {
     halt_catch_fire :: proc() -> ! ---
 }
 
