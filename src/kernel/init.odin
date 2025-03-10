@@ -7,6 +7,7 @@ import "core:mem"
 import "../drivers/vga"
 import mb "multiboot"
 import "meminfo"
+import "core:log"
 
 foreign {
     @(link_name = "__$startup_runtime")
@@ -34,6 +35,8 @@ default_context :: proc() -> runtime.Context {
 
 init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
     context = KCTX
+    context.logger = kernel_logger_init()
+
     #force_no_inline _startup_runtime()
 
     mb_info := mb_info
@@ -82,10 +85,12 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
     //     vga.println("")
     // }
 
-    log(.Info, "Initializing interrupt descriptor table")
+    // log(.Info, "Initializing interrupt descriptor table")
+    log.info("Initializing interrupt descriptor table")
     init_idt()
 
-    log(.Info, "Initializing local APIC")
+    // log(.Info, "Initializing local APIC")
+    log.info("Initializing local APIC and legacy PIC")
     init_apic()
 
     return default_context()

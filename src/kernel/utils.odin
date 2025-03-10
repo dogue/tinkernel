@@ -14,27 +14,27 @@ Log_Level :: enum {
     Info,
     Warn,
     Error,
-    Panic,
+    Fatal,
 }
 
 panic :: proc "contextless" (msg: string) -> ! {
-    log(.Panic, msg)
+    log(.Fatal, msg)
     halt_catch_fire()
 }
 
 panicf :: proc(f: string, args: ..any) -> ! {
-    logf(.Panic, f, ..args)
+    logf(.Fatal, f, ..args)
     halt_catch_fire()
 }
 
 log :: proc "contextless" (level: Log_Level, msg: string) {
     level_str: string
     switch level {
-    case .Debug: level_str = "DEBUG"
-    case .Info: level_str = "INFO"
-    case .Warn: level_str = "WARN"
-    case .Error: level_str = "ERROR"
-    case .Panic: level_str = "PANIC"
+    case .Debug: level_str = "Debug"
+    case .Info: level_str = "Info"
+    case .Warn: level_str = "Warn"
+    case .Error: level_str = "Error"
+    case .Fatal: level_str = "Fatal"
     }
 
     vga.print("[")
