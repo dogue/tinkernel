@@ -6,7 +6,6 @@ import "core:math/bits"
 import "core:mem"
 import "../drivers/vga"
 import mb "multiboot"
-import "meminfo"
 import "core:log"
 
 foreign {
@@ -34,8 +33,9 @@ default_context :: proc() -> runtime.Context {
 }
 
 init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
+    KCTX.logger = kernel_logger_init()
+    KCTX.assertion_failure_proc = kpanic
     context = KCTX
-    context.logger = kernel_logger_init()
 
     #force_no_inline _startup_runtime()
 
@@ -53,8 +53,6 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
     region_base_addr := (^u8)(uintptr(entries[3].base_addr))
     region_size := uint(1) << bits.log2(uint(entries[3].len))
     region := slice.from_ptr(region_base_addr, int(region_size))
-
-    meminfo.init(3, entries[3].base_addr, u64(region_size))
 
     mem.buddy_allocator_init(&_KALLOC_BUDDY, region, 8)
     KALLOC = mem.buddy_allocator(&_KALLOC_BUDDY)

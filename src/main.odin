@@ -4,12 +4,16 @@ import "kernel"
 import "drivers/vga"
 import mb "kernel/multiboot"
 
+foreign _ {
+    halt_catch_fire :: proc() -> ! ---
+}
+
 @(export, link_name = "kmain", require)
 kmain :: proc "contextless" (mb_info: ^mb.Multiboot_Info, mb_magic: u32) -> ! {
     context = kernel.init(mb_info)
 
     if mb_magic != 0x36d76289 {
-        kernel.panic("Multiboot magic number missing or incorrect")
+        panic("Multiboot magic number missing or incorrect")
     }
 
     // vga.clear()

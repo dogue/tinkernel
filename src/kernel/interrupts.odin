@@ -1,6 +1,7 @@
 package kernel
 
 import "core:fmt"
+import "core:log"
 
 @(default_calling_convention = "sysv")
 foreign {
@@ -125,27 +126,28 @@ init_idt :: proc() {
 }
 
 ih_div_error :: proc() -> ! {
-    panic("DIVISION FAULT")
+    panic("division fault exception")
 }
 
 ih_nmi :: proc() {
-    log(.Debug, "caught NMI")
+    log.info("caught NMI")
 }
 
 ih_double_fault :: proc(error_code: u64) {
-    panicf("doubel fault: %d", error_code)
+    log.panicf("double fault exception: %X", error_code)
 }
 
 ih_general_protection_fault :: proc(error_code: u64) {
-    logf(.Error, "general protection fault: %d", error_code)
+    log.errorf("general protection fault: %X", error_code)
 }
 
 ih_page_fault :: proc(error_code: u64) {
     fault_addr := read_cr2()
-    panicf("page fault: 0x%X", fault_addr)
+    msg := fmt.tprintf("page fault: 0x%X", fault_addr)
+    panic(msg)
 }
 
 ih_keyboard :: proc() {
-    // logf(.Debug, "KEY: 0x%2X", inb(0x60))
     scancode := inb(0x60)
+    log.infof("scancode: 0x%2X", scancode)
 }

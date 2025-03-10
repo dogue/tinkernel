@@ -14,6 +14,25 @@ inb:
     in al, dx
     ret
 
+global read_msr
+read_msr:
+    mov ecx, edi
+    rdmsr
+    ret
+
+global write_msr
+write_msr:
+    mov ecx, edi
+    mov eax, esi
+    ; xor edx, edx
+    wrmsr
+    ret
+
+global set_interrupt
+set_interrupt:
+    sti
+    ret
+
 global halt_catch_fire
 halt_catch_fire:
     cli

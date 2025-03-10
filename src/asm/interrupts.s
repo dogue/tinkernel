@@ -1,17 +1,17 @@
 bits 64
-global load_idt
-global isr_common
-global read_cr2
 
+global read_cr2
 read_cr2:
     mov rax, cr2
     ret
 
+global load_idt
 load_idt:
     mov rax, rdi
     lidt [rax]
     ret
 
+global isr_common
 isr_common:
     pop r11 ; interrupt num
     pop r10 ; error
@@ -36,11 +36,9 @@ isr_common:
     mov rsi, r10
 
     ; kernel code handler
+    ; interrupt is cleared by the handler
     extern interrupt_handler
     call interrupt_handler
-
-    ; mov rax, 0xfee000b0 ; APIC EOI reg
-    ; mov dword [rax], 0
 
     pop r15
     pop r14
@@ -58,7 +56,6 @@ isr_common:
     pop rbx
     pop rax
 
-    ; add rsp, 16
     iretq
 
 ; ISR handlers
