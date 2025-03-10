@@ -33,15 +33,17 @@ default_context :: proc() -> runtime.Context {
 }
 
 init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
-    KCTX.logger = kernel_logger_init()
+    KCTX.logger = kernel_logger_init(.Info)
     KCTX.assertion_failure_proc = kpanic
     context = KCTX
 
+    klog(.Info, "calling _startup_runtime")
     #force_no_inline _startup_runtime()
 
+    klog(.Info, "parsing multiboot memory map")
     memory_map := mb.find_memory_map(mb_info)
     if memory_map == nil {
-        panic("Memory map is nil")
+        panic("memory map is nil")
     }
 
     entry_count := (memory_map.size - 16) / size_of(mb.Memory_Map_Entry)
@@ -52,40 +54,18 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
     region_size := uint(1) << bits.log2(uint(entries[3].len))
     region := slice.from_ptr(region_base_addr, int(region_size))
 
+    klog(.Info, "initializing kernel allocator")
     mem.buddy_allocator_init(&_KALLOC_BUDDY, region, 8)
     KALLOC = mem.buddy_allocator(&_KALLOC_BUDDY)
     KCTX.allocator = KALLOC
     context.allocator = KALLOC
 
-    vga.clear()
+    log.infof("memory region base address: 0x%X", region_base_addr)
+    log.infof("memory region size: %d bytes", region_size)
 
-    // vga.println("REGIONS:")
-    // for entry, i in entries {
-    //     type: string
-    //     switch entry.type {
-    //     case 1: type = "available"
-    //     case 2: type = "reserved"
-    //     case 3: type = "ACPI reclaimbable"
-    //     case 4: type = "ACPI NVS"
-    //     case 5: type = "bad memory"
-    //     case: type = "unknown"
-    //     }
-    //
-    //     if type == "reserved" do continue
-    //
-    //
-    //     vga.printfln("\tREGION %d:", i)
-    //     vga.printfln("\t\tTYPE: %s", type)
-    //     vga.printfln("\t\tBASE: %x", entry.base_addr)
-    //     vga.printfln("\t\t LEN: %d", entry.len)
-    //     vga.println("")
-    // }
-
-    // log(.Info, "Initializing interrupt descriptor table")
     log.info("Initializing interrupt descriptor table")
     init_idt()
 
-    // log(.Info, "Initializing local APIC")
     log.info("Initializing local APIC and legacy PIC")
     init_apic()
 

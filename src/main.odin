@@ -10,13 +10,13 @@ foreign _ {
 
 @(export, link_name = "kmain", require)
 kmain :: proc "contextless" (mb_info: ^mb.Multiboot_Info, mb_magic: u32) -> ! {
+    vga.clear()
     context = kernel.init(mb_info)
 
     if mb_magic != 0x36d76289 {
         panic("Multiboot magic number missing or incorrect")
     }
 
-    // vga.clear()
     vga.println("Tinkernel :)")
 
     // exception handler test

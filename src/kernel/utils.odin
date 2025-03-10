@@ -48,11 +48,11 @@ kernel_logger_proc :: proc(
     vga.printfln("[%s] %s", level, text)
 }
 
-kernel_logger_init :: proc "contextless" () -> runtime.Logger {
+kernel_logger_init :: proc "contextless" (level: runtime.Logger_Level = .Info) -> runtime.Logger {
     return runtime.Logger {
         procedure = kernel_logger_proc,
         data = nil,
-        lowest_level = .Debug,
+        lowest_level = level,
         options = {},
     }
 }
