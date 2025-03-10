@@ -39,8 +39,6 @@ init :: proc "contextless" (mb_info: ^mb.Multiboot_Info) -> runtime.Context {
 
     #force_no_inline _startup_runtime()
 
-    mb_info := mb_info
-
     memory_map := mb.find_memory_map(mb_info)
     if memory_map == nil {
         panic("Memory map is nil")
